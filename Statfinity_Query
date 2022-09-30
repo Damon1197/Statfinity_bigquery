@@ -89,11 +89,10 @@ limit 5 ;
 select cust_id,sum (total_amt) AS Revenu from `Statfinity_sql_case.Transaction`
 where cust_id in 
 (select customer_id from `Statfinity_sql_case.Customer` 
-where date_diff(date"2022-09-17",DOB, YEAR) between 25 and 35)
-and convert(date,tran_date,103) between date_add(DAY,-30,(select max(convert(date,tran_date,103)) from `Statfinity_sql_case.Transaction`)) 
- and (select max(convert(date,tran_date,103)) from `Statfinity_sql_case.Transaction`)
+where date_diff(DATE "2022-09-17",DOB, YEAR) between 25 and 35)
+and tran_date between (select max(tran_date) -30  from `Statfinity_sql_case.Transaction`) 
+ and (select max(tran_date) from `Statfinity_sql_case.Transaction`)
 group by cust_id;
-
 
 
 #12
