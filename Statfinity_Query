@@ -1,0 +1,154 @@
+#1
+select Store_type,count(*) as COUNT  
+from `Statfinity_sql_case.Transaction`
+group by Store_type order by 1 desc limit 1;
+
+
+#2
+select Gender, count(*) as COUNT 
+from `Statfinity_sql_case.Customer`
+where Gender in ('M','F') 
+group by Gender;
+
+
+#3
+select city_code, count(*) as COUNT 
+from `Statfinity_sql_case.Customer` 
+group by city_code 
+order by 2  desc 
+limit 1 ;
+
+
+#4
+select prod_subcat 
+from `Statfinity_sql_case.prod_cat` 
+where prod_cat = "Books";
+
+
+#5
+select prod_cat, max(Qty) as MAX_Quantity 
+from `Statfinity_sql_case.Transaction`
+left join `Statfinity_sql_case.prod_cat` on prod_cat_cod = prod_cat_code
+group by prod_cat;
+
+
+#6
+select sum(total_amt) as Net_Amount
+from `Statfinity_sql_case.Transaction`
+inner join `Statfinity_sql_case.prod_cat` 
+on prod_cat_code = prod_cat_cod
+and prod_subcat_cod = prod_subcat_code
+where prod_cat in ('Books','Electronics');
+
+
+
+#7
+select cust_id,COUNT(cust_id) AS Count_of_Transaction
+from `Statfinity_sql_case.Transaction`
+where Qty >= 0
+group by cust_id
+having COUNT(cust_id) > 10;
+
+
+#8
+select sum(total_amt) as Combine_Revnue
+from `Statfinity_sql_case.Transaction` 
+inner join `Statfinity_sql_case.prod_cat` 
+on prod_cat_code = prod_cat_cod
+and prod_subcat_cod = prod_subcat_code
+where prod_cat in ('Clothing','Electronics')
+and Store_type = 'Flagship store';
+
+
+
+#9
+select prod_subcat, sum(total_amt) as Revenu
+from `Statfinity_sql_case.Transaction`
+left join `Statfinity_sql_case.Customer` on cust_id = customer_Id
+left join `Statfinity_sql_case.prod_cat` 
+on prod_subcat_code = prod_subcat_cod and prod_subcat_cod = prod_subcat_code
+where prod_cat = 'Electronics' and Gender = 'M'
+group by prod_subcat;
+
+
+
+#10
+select prod_subcat, (sum(total_amt)/(select sum(total_amt)
+from `Statfinity_sql_case.Transaction`))*100 as Percantage_of_sales,
+(count(case when Qty <0 then Qty else null end)/sum(Qty))*100 as Percentage_of_return
+from `Statfinity_sql_case.Transaction`
+inner join `Statfinity_sql_case.prod_cat` on prod_cat_code = prod_cat_cod
+and prod_subcat_code = prod_subcat_cod
+group by prod_subcat
+order by sum(total_amt) desc 
+limit 5 ;
+
+
+
+#11
+select cust_id,sum (total_amt) AS Revenu from `Statfinity_sql_case.Transaction`
+where cust_id in 
+(select customer_id from `Statfinity_sql_case.Customer` 
+where date_diff(date"2022-09-17",DOB, YEAR) between 25 and 35)
+and convert(date,tran_date,103) between date_add(DAY,-30,(select max(convert(date,tran_date,103)) from `Statfinity_sql_case.Transaction`)) 
+ and (select max(convert(date,tran_date,103)) from `Statfinity_sql_case.Transaction`)
+group by cust_id;
+
+
+
+#12
+select p.prod_cat, sum(case when total_amt<0 then total_amt else 0 end) total_return_vale
+from `Statfinity_sql_case.Transaction` as t inner join `Statfinity_sql_case.prod_cat` as p on t.prod_cat_code = p.prod_cat_cod
+group by p.prod_cat, tran_date
+having tran_date > (select max(tran_date) -90 from `Statfinity_sql_case.Transaction`)
+order by total_return_vale asc
+limit 1;
+
+
+
+#13
+select  Store_type,sum(Qty) Qty_sold,
+round(sum(total_amt),2) sales_amount
+from `Statfinity_sql_case.Transaction`
+group by Store_type
+order by sales_amount desc, Qty_sold desc
+limit 1;
+
+
+
+#14
+select prod_cat, avg(total_amt) avg_revenue_of_prod
+from `Statfinity_sql_case.Transaction` t 
+inner join `Statfinity_sql_case.prod_cat` p on t.prod_cat_code = p.prod_cat_cod 
+group by prod_cat
+having avg(total_amt) > (select avg(total_amt) from `Statfinity_sql_case.Transaction`);
+
+
+
+#15
+select prod_cat, prod_subcat, avg(total_amt) avg_revenue, sum(total_amt) total_revenue 
+from `Statfinity_sql_case.Transaction` 
+inner join `Statfinity_sql_case.prod_cat` 
+on prod_cat_code = prod_cat_cod and prod_subcat_code = prod_subcat_cod
+where prod_cat_cod in
+(select  prod_cat_code from `Statfinity_sql_case.Transaction` 
+group by prod_cat_code
+order by sum(case when Qty >0 then Qty else 0 end) desc
+limit 5)
+group by prod_cat, prod_subcat
+order by prod_cat, prod_subcat;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
